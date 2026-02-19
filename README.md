@@ -1,14 +1,12 @@
-<p align="center">
-  <img src="assets/radiant_logo.svg" alt="Radiant" height="48" />
-</p>
+
 
 # Radiant AI CRM (OSS)
 
 **Your AI-powered sales rep that never sleeps.** [meetradiant.com](https://meetradiant.com)
 
-<p align="center">
-  <img src="assets/app view.png" alt="Radiant App" width="100%" />
-</p>
+Built by: [https://x.com/dylanmeyford](https://x.com/dylanmeyford)
+
+
 
 Radiant is an open-source AI CRM that works autonomously in the background — analysing your pipeline, drafting your next move, and keeping every deal moving forward. Wake up in the morning, approve actions, get back to prospecting.
 
@@ -16,17 +14,19 @@ Radiant is an open-source AI CRM that works autonomously in the background — a
 
 ## What Radiant Does For You
 
-| | |
-|---|---|
-| **Connects to your email and calendar** | Radiant plugs directly into your existing tools — no data entry, no manual syncing. |
-| **Analyses every activity automatically** | Every email, meeting, and interaction is processed and turned into actionable intelligence. |
-| **Joins and analyses every meeting** | Radiant attends your calls, extracts key insights, and updates your CRM automatically. |
+
+|                                                          |                                                                                               |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Connects to your email and calendar**                  | Radiant plugs directly into your existing tools — no data entry, no manual syncing.           |
+| **Analyses every activity automatically**                | Every email, meeting, and interaction is processed and turned into actionable intelligence.   |
+| **Joins and analyses every meeting**                     | Radiant attends your calls, extracts key insights, and updates your CRM automatically.        |
 | **Processes every deal and drafts the next best action** | Always know what to do next — Radiant pro-actively surfaces the right move at the right time. |
-| **Consumes your files and playbooks** | Feed it your sales playbooks, decks, and docs — Radiant learns your process and follows it. |
-| **Sends, schedules, drafts and cancels emails** | Radiant handles your outreach end-to-end, with your voice and your strategy. |
-| **Researches and enriches contacts and deals** | Automatically fills in the gaps — company info, contacts, context — without lifting a finger. |
-| **Creates meeting agendas automatically** | Every call prepared. Every attendee briefed. Every agenda ready before you walk in. |
-| **Finds new contacts to add to your deals** | Radiant identifies the right stakeholders and adds them to your pipeline automatically. |
+| **Consumes your files and playbooks**                    | Feed it your sales playbooks, decks, and docs — Radiant learns your process and follows it.   |
+| **Sends, schedules, drafts and cancels emails**          | Radiant handles your outreach end-to-end, with your voice and your strategy.                  |
+| **Researches and enriches contacts and deals**           | Automatically fills in the gaps — company info, contacts, context — without lifting a finger. |
+| **Creates meeting agendas automatically**                | Every call prepared. Every attendee briefed. Every agenda ready before you walk in.           |
+| **Finds new contacts to add to your deals**              | Radiant identifies the right stakeholders and adds them to your pipeline automatically.       |
+
 
 ---
 
