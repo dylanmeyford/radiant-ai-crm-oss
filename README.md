@@ -1,52 +1,59 @@
-# radiant-ai-crm-oss
+# Radiant AI CRM (OSS)
 
-Open-source monorepo for Radiant CRM, combining the API and web app in one workspace.
 
-## Monorepo Layout
 
-- `api/` - TypeScript/Express backend with MongoDB, Stripe, Nylas, and AI workflows
-- `frontend/` - React/TypeScript/Vite web app
-- `api/docs/` - backend technical docs (billing, AI usage, webhooks, and integrations)
+Open-source monorepo for Radiant AI CRM, with the API and web app in one workspace.
 
 ## Highlights
 
-- AI-powered CRM workflows and opportunity intelligence
-- Billing and subscription support via Stripe
-- Email and calendar integrations via Nylas
-- Shared OSS policies and contribution templates in one repository
+- AI-first CRM workflows for lead research, opportunity management, and automation
+- Revenue-ready billing foundation with Stripe subscriptions and webhooks
+- Native communication workflows through Nylas email and calendar integrations
+- Type-safe, full-stack monorepo setup with shared conventions and docs
+- Built for practical local development with a dev container-first backend workflow
 
-## Prerequisites
+## Monorepo Layout
 
-- Node.js 20+
-- npm
-- MongoDB (local or hosted)
-- Stripe and Nylas test credentials
+- `api/` - TypeScript + Express backend with MongoDB, Stripe, Nylas, and AI workflows
+- `frontend/` - React + TypeScript + Vite web application
+- `api/docs/` - backend docs for billing, AI usage, webhooks, and integrations
+
+## Local Development (Recommended)
+
+Preferred local workflow is using the dev container for backend development.
+
+1. Open the `api/` folder in VS Code or Cursor.
+2. Reopen in container using `api/.devcontainer/devcontainer.json`.
+3. Use the container terminal to install dependencies and run services.
 
 ## Quick Start
 
-1. Install dependencies from the root:
+If you are not using the dev container, use this local setup:
+
+1. Install dependencies from the repository root:
 
 ```bash
 npm install
 ```
 
-2. Create env files:
+1. Create environment files:
 
 ```bash
 cp api/.env.example api/.env
 cp frontend/.env.example frontend/.env.development
 ```
 
-3. Start both apps:
+1. Start API and frontend together:
 
 ```bash
 npm run dev
 ```
 
-## App Documentation
+## Documentation
 
 - API setup and architecture: `api/README.md`
 - Frontend setup and integration: `frontend/README.md`
+- API security notes: `api/SECURITY.md`
 
 ## Contributing and Policies
 
@@ -54,3 +61,4 @@ npm run dev
 - Code of conduct: `CODE_OF_CONDUCT.md`
 - Security policy: `.github/SECURITY.md`
 - License: `LICENSE` (AGPL-3.0)
+
