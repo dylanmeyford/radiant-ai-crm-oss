@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/radiant_logo.svg" alt="Radiant" height="48" />
+</p>
+
 
 
 # Radiant AI CRM (OSS)
@@ -6,6 +10,9 @@
 
 Built by: [https://x.com/dylanmeyford](https://x.com/dylanmeyford)
 
+<p align="center">
+  <img src="assets/app view.png" alt="Radiant App" width="100%" />
+</p>
 
 
 Radiant is an open-source AI CRM that works autonomously in the background — analysing your pipeline, drafting your next move, and keeping every deal moving forward. Wake up in the morning, approve actions, get back to prospecting.
