@@ -1,0 +1,185 @@
+---
+alwaysApply: false
+---
+When using mastra, always follow the following patterns:
+
+1. Agent Init
+
+- Initialize the agent in the src > mastra > agents folder. 
+- Names match the function purpose, with Agent appended - eg. FastCallAgent.ts, or SalesCalculatorAgent.ts
+
+2. Agent
+
+When creating our agent follow this example:
+
+```typescript
+import { getOpenAIResponsesModel } from '../utils/openaiProvider';
+export const nextActionAgent = new Agent({
+    name: 'Next Action Agent',
+    instructions: `
+    Today's date is ${new Date().toISOString().split('T')[0]}. Time is ${new Date().toISOString().split('T')[1]}.
+    You are a top tier sales executive with over 2 decades of experience in B2B sales.
+    
+    EXPERTISE:
+    - Master of the MEDPICC framework and how it can be used to determine the next best action (Metrics, Economic Buyer, Decision criteria, Paper process, Identify pain, Champion, Competition)
+    - Deep understanding of sales methodologies from industry-leading books:
+      • Founding Sales (Pete Kazanjy)
+      • The Challenger Sale (Brent Adamson)
+      • The Sales Acceleration Formula (Mike Volpe)
+      • The Pipeline Game (Mark Roberge)
+      • The Sales Development Playbook (Mark Roberge)
+  
+    You always base your behaviour as if you were the above experts.
+
+    CAPABILITIES:
+    - Precisely assess deal progress within the sales pipeline
+    - Determine critical next steps to advance opportunities
+    - Analyze prospect communications to identify buying signals and objections
+    - Understand multi-threading stakeholders and how to engage them
+    `,
+    model: getOpenAIResponsesModel('gpt-5'),
+    defaultGenerateOptions: {
+        providerOptions: {
+            openai: {
+                timeout: 300000, // 5 minutes for complex reasoning with large payloads
+                reasoningEffort: 'high',
+            },
+        },
+    },
+  });
+```
+
+3. Calling the agent
+- When calling the agent first initialize the agent using getAgent:
+
+```Typescript
+const nextActionAgent = mastra.getAgent('nextActionAgent');
+```
+
+Then when calling the agent, use structured output where appropriate, and provide the required metadata (must always include organisation).
+
+**Important:** For eval tracking, capture input variables BEFORE building the prompt, then pass the `captureId` in metadata. This enables prompt replay and A/B testing without code changes. See `docs/AI_EVAL_SYSTEM.md` for full details.
+
+```Typescript
+import { EvalCaptureService } from '../services/AI/evals/EvalCaptureService';
+
+// 1. Capture input variables for eval system (before building prompt)
+const inputVariables = {
+  opportunity: context.opportunity,
+  contacts: context.contacts,
+  recentActivities: context.recentActivities,
+  // ... all variables used in your prompt template
+};
+
+const captureId = await EvalCaptureService.startCapture({
+  organizationId: (context.opportunity.organization as any)?._id?.toString() || '',
+  agentName: 'nextActionAgent',
+  inputVariables,
+  promptTemplateVersion: 'v1.0',
+  metadata: {
+    opportunityId: (context.opportunity as any)?._id?.toString() || '',
+  },
+});
+
+// 2. Build your prompt using the same inputVariables
+const contextPrompt = buildContextPrompt(inputVariables);
+
+// 3. Call the AI agent with structured output
+const result = await nextActionAgent.generateLegacy(
+  [{
+    content: contextPrompt,
+    role: 'user'
+  }],
+  {
+    output: NextBestActionsSchema,
+    providerOptions: {
+      openai: {
+        metadata: {
+          file: 'next-best-action-agent',
+          agent: 'nextActionAgent',
+          orgId: (context.opportunity.organization as any)?._id?.toString() || '',
+          opportunityId: (context.opportunity as any)?._id?.toString() || '',
+          // Include captureId for eval system to record execution results
+          ...(captureId ? { evalCaptureId: captureId } : {}),
+        }
+      }
+    }
+  }
+);
+```
+
+The eval capture system works in two layers:
+- **Service layer**: Captures raw input variables (via `startCapture`) for prompt replay
+- **Wrapper layer**: Captures execution data (output, tokens, latency) automatically via the `evalCaptureId` in metadata
+
+4. Zod Schema Requirements for OpenAI Structured Outputs
+
+OpenAI's strict JSON schema mode requires **all object properties to be in the `required` array**. This affects how you write Zod schemas.
+
+**Key Rules:**
+
+- **All fields must be required** - OpenAI rejects schemas where properties aren't in the `required` array
+- **Use `.nullable()` instead of `.optional()`** - This keeps the field required but allows `null` values
+- **Never use `.partial()`** - This makes all fields optional which breaks OpenAI strict mode
+- **Arrays of objects** - All properties inside nested objects must also be required
+
+**Correct Pattern:**
+
+```typescript
+// GOOD - Use .nullable() for optional fields
+const EmailSchema = z.object({
+  to: z.array(z.string().email()),           // Required field
+  cc: z.array(z.string().email()).nullable(), // Optional - use null when not needed
+  subject: z.string().nullable(),             // Optional - use null when not needed
+  body: z.string(),                           // Required field
+});
+
+// GOOD - Arrays of objects with all required fields
+const ItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  value: z.number(),
+});
+const ListSchema = z.object({
+  items: z.array(ItemSchema),
+});
+```
+
+**Incorrect Patterns:**
+
+```typescript
+// BAD - .optional() removes field from required array
+cc: z.array(z.string().email()).optional()
+
+// BAD - .partial() makes ALL fields optional
+const DraftSchema = OriginalSchema.partial()
+
+// BAD - Optional field inside array of objects
+const ItemSchema = z.object({
+  id: z.string(),
+  metadata: z.string().optional(), // Will cause OpenAI schema error!
+});
+
+// BAD - Unsupported format validators
+sources: z.array(z.string().url())  // 'uri' format not supported by OpenAI!
+```
+
+**Supported string formats** (from OpenAI docs):
+- `date-time`, `time`, `date`, `duration`
+- `email`, `hostname`
+- `ipv4`, `ipv6`, `uuid`
+
+Note: `.url()` in Zod maps to `uri` format which is NOT supported. Use plain `z.string()` instead.
+
+**Prompt Instructions:**
+
+When using nullable fields, instruct the AI in your prompt:
+- Use `null` for fields that should not be provided
+- Provide actual values only for fields being set
+
+Reference: https://platform.openai.com/docs/guides/structured-outputs
+
+5. New agents must be added to:
+- `src/config/agentCategories.ts`
+- `src/config/defaultAgentRates.ts`
+- `src/config/agentCategories.ts`

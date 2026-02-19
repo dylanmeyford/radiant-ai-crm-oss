@@ -1,0 +1,319 @@
+---
+alwaysApply: true
+---
+
+# TanStack Query Optimistic UI Patterns - Development Standards
+
+## Overview
+All user interactions in our application should follow optimistic UI patterns using TanStack Query for enterprise-grade user experience. This means the UI responds instantly to user actions, with graceful fallback and error handling managed by TanStack Query's cache.
+
+## Core Principles
+
+### 1. Instant Feedback
+- UI updates immediately when user performs an action via TanStack Query cache updates
+- No waiting for server responses for basic interactions
+- Visual loading states show progress without blocking interaction
+
+### 2. Graceful Degradation
+- Failed operations rollback gracefully via TanStack Query's onError
+- Clear error messaging when things go wrong
+- Offline operations queue and sync when online (handled by TanStack Query)
+
+### 3. Contextual Loading States
+- Loading indicators appear on the specific item being updated
+- Subtle, elegant visual feedback (rings, spinners, background tints)
+- Non-intrusive - don't block other interactions
+
+## REQUIRED: TanStack Query Mutation Pattern
+
+### All Mutation Hooks MUST Follow This Pattern:
+
+```typescript
+const updateMutation = useMutation({
+  mutationFn: async ({ itemId, updates }: { itemId: string; updates: UpdateData }) => {
+    const { data, error: apiError } = await requestWithAuth(
+      `api/items/${itemId}`,
+      "PUT",
+      updates
+    );
+    if (apiError) throw new Error(apiError);
+    return data;
+  },
+  onMutate: async (variables) => {
+    // 1. Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+    await queryClient.cancelQueries({ queryKey: queryKeys.items.list() });
+    await queryClient.cancelQueries({ queryKey: queryKeys.items.detail(variables.itemId) });
+
+    // 2. Snapshot the previous values for rollback
+    const previousItems = queryClient.getQueryData(queryKeys.items.list());
+    const previousItem = queryClient.getQueryData(queryKeys.items.detail(variables.itemId));
+
+    // 3. Optimistically update the cache immediately
+    queryClient.setQueryData(queryKeys.items.list(), (old: Item[]) => {
+      if (!old || !Array.isArray(old)) return old;
+      
+      return old.map((item: Item) =>
+        item._id === variables.itemId
+          ? { ...item, ...variables.updates }
+          : item
+      );
+    });
+
+    // 4. Also update individual item cache if it exists
+    queryClient.setQueryData(queryKeys.items.detail(variables.itemId), (old: Item) => {
+      if (!old) return old;
+      return { ...old, ...variables.updates };
+    });
+
+    // 5. Return context for rollback
+    return { previousItems, previousItem };
+  },
+  onError: (err, variables, context) => {
+    // 6. Rollback on failure - TanStack Query handles this automatically
+    if (context?.previousItems) {
+      queryClient.setQueryData(queryKeys.items.list(), context.previousItems);
+    }
+    if (context?.previousItem) {
+      queryClient.setQueryData(queryKeys.items.detail(variables.itemId), context.previousItem);
+    }
+  },
+  onSettled: (data, error, variables) => {
+    // 7. Always refetch after error or success to ensure consistency
+    queryClient.invalidateQueries({ queryKey: queryKeys.items.list() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.items.detail(variables.itemId) });
+  },
+});
+```
+
+### CRITICAL: Data Structure Alignment
+
+**The optimistic update MUST match your query function's return structure:**
+
+```typescript
+// If your query returns a direct array:
+const itemsQuery = useQuery({
+  queryFn: async () => {
+    const { data } = await requestWithAuth("api/items", "GET", null);
+    return Array.isArray(data) ? data : data?.data || []; // Returns direct array
+  }
+});
+
+// Then your optimistic update should work on that direct array:
+queryClient.setQueryData(queryKeys.items.list(), (old: Item[]) => {
+  if (!old || !Array.isArray(old)) return old; // Direct array check
+  return old.map(item => /* update logic */);
+});
+```
+
+## Hook Structure Template
+
+### Every Operations Hook Should Include:
+
+```typescript
+export function useItemOperations() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  // 1. Use useQuery for fetching data
+  const itemsQuery = useQuery({
+    queryKey: queryKeys.items.list(),
+    queryFn: async () => {
+      const { data, error: apiError } = await requestWithAuth("api/items", "GET", null);
+      if (apiError) throw new Error(apiError);
+      
+      // Process and return clean data structure
+      const itemsData = Array.isArray(data) ? data : (data?.data || []);
+      return itemsData.map((item: any) => ({
+        ...item,
+        // Process any date fields, etc.
+      }));
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  // 2. Create mutations with optimistic updates
+  const updateMutation = useMutation({
+    // ... (use pattern above)
+  });
+
+  // 3. Wrapper functions for easier usage
+  const updateItem = async (itemId: string, updates: UpdateData) => {
+    setError(null);
+    try {
+      const data = await updateMutation.mutateAsync({ itemId, updates });
+      return { success: true, data };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to update item";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  return {
+    // Query data and states
+    items: itemsQuery.data || [],
+    isLoadingItems: itemsQuery.isLoading,
+    itemsError: itemsQuery.error,
+    refetchItems: itemsQuery.refetch,
+    
+    // Mutation states
+    isUpdating: updateMutation.isPending,
+    error,
+    
+    // Actions
+    updateItem,
+    clearError: () => setError(null),
+  };
+}
+```
+
+## Component Usage Pattern
+
+### Components Should Use Query Data Directly:
+
+```typescript
+const MyComponent: React.FC = () => {
+  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
+  
+  const { 
+    items,
+    isLoadingItems,
+    itemsError,
+    updateItem 
+  } = useItemOperations();
+
+  // Organize data as needed (TanStack Query handles the cache)
+  const organizedData = useMemo(() => {
+    return items.reduce((acc, item) => {
+      // Your organization logic
+      return acc;
+    }, {});
+  }, [items]);
+
+  const handleUpdate = async (itemId: string, updates: UpdateData) => {
+    setUpdatingItemId(itemId);
+    try {
+      // TanStack Query handles optimistic updates automatically
+      const result = await updateItem(itemId, updates);
+      if (!result.success) {
+        console.error('Update failed:', result.error);
+      }
+    } catch (error) {
+      console.error('Update error:', error);
+    } finally {
+      setUpdatingItemId(null);
+    }
+  };
+
+  // Render using organized data - TanStack Query keeps it updated
+  return (
+    <div>
+      {organizedData.map(item => (
+        <ItemCard 
+          key={item._id}
+          item={item}
+          isUpdating={updatingItemId === item._id}
+          onUpdate={handleUpdate}
+        />
+      ))}
+    </div>
+  );
+};
+```
+
+## Visual Loading States
+
+### Standard Loading Indicators:
+
+```typescript
+// Per-item loading state
+<div className={`
+  transition-all duration-200 
+  ${isUpdating ? 'ring-2 ring-blue-200 bg-blue-50/30' : ''}
+`}>
+  <div className="flex items-center gap-2">
+    <span>{item.name}</span>
+    {isUpdating && (
+      <Loader2 className="h-3 w-3 text-blue-500 animate-spin" />
+    )}
+  </div>
+</div>
+```
+
+### Color Schemes:
+- **Loading**: Blue (`text-blue-500`, `ring-blue-200`, `bg-blue-50/30`)
+- **Error**: Red (`text-red-500`, `ring-red-200`, `bg-red-50/30`)
+- **Success**: Green (`text-green-500`, `ring-green-200`, `bg-green-50/30`)
+
+## Implementation Checklist
+
+For every new component with user interactions:
+
+- [ ] Uses `useQuery` for data fetching
+- [ ] Implements `useMutation` with proper `onMutate` optimistic updates
+- [ ] Optimistic update matches query data structure exactly
+- [ ] Shows contextual loading states per item
+- [ ] Handles rollback scenarios via `onError`
+- [ ] Uses TanStack Query cache as single source of truth
+- [ ] Has proper error boundaries
+- [ ] Uses consistent visual patterns
+- [ ] Includes accessibility features
+
+## Common Mistakes to Avoid
+
+### ❌ DON'T: Mix local state with TanStack Query
+```typescript
+// Wrong - competing state management
+const [items, setItems] = useState([]);
+const itemsQuery = useQuery(/* ... */);
+```
+
+### ❌ DON'T: Mismatched data structures in optimistic updates
+```typescript
+// Wrong - assumes wrapped structure when query returns direct array
+queryClient.setQueryData(key, (old: any) => ({
+  ...old,
+  data: old.data.map(/* ... */) // Error if old is direct array
+}));
+```
+
+### ❌ DON'T: Manual cache invalidation without optimistic updates
+```typescript
+// Wrong - only invalidates, no optimistic update
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: queryKeys.items.list() });
+}
+```
+
+### ✅ DO: Use TanStack Query as single source of truth
+```typescript
+// Correct - query data drives UI
+const { items } = useItemOperations();
+const organizedItems = useMemo(() => organize(items), [items]);
+```
+
+### ✅ DO: Match optimistic update to query structure
+```typescript
+// Correct - direct array update for direct array query
+queryClient.setQueryData(key, (old: Item[]) => {
+  if (!old || !Array.isArray(old)) return old;
+  return old.map(item => /* update */);
+});
+```
+
+## Examples in Codebase
+
+- **useOpportunityOperations**: Perfect example of TanStack Query optimistic updates
+- **PipelinePage**: Uses query data directly, no local state management
+- **OpportunityCard**: Per-item loading states with visual feedback
+
+## Benefits
+
+1. **Persistent Updates**: Changes persist across page navigation
+2. **Automatic Rollback**: Failed API calls revert automatically
+3. **Enterprise UX**: Instant feedback with proper error handling
+4. **Offline Support**: Works seamlessly when offline
+5. **Consistent State**: Single source of truth in TanStack Query cache
+6. **Performance**: Efficient cache management and updates

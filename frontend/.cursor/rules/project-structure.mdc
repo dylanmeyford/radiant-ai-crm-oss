@@ -1,0 +1,67 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Structure
+
+This document outlines the project structure for our React TypeScript project, and provides guidelines for organizing files.
+Our application uses TanStack Query to handle our calls and state management.
+
+## Root Directory
+
+*   `.git/`: Contains Git version control information.
+*   `dist/`: Contains the build output of the project. (This is generated and should not be manually edited).
+*   `index.html`: The main HTML file for the application.
+*   `package-lock.json`: Records the exact versions of dependencies. (Managed by npm/yarn).
+*   `package.json`: Lists project dependencies and scripts.
+*   `node_modules/`: Contains installed npm packages. (Managed by npm/yarn, not version controlled by default).
+*   `public/`: Contains static assets that are publicly accessible.
+    *   *Purpose*: Store images, fonts, or other files that don't need processing by the build system.
+*   `tailwind.config.js`: Configuration file for Tailwind CSS.
+*   `.cursor/`: Cursor specific files.
+*   `src/`: Contains the main source code for the application. (See details below).
+*   `TO_FIX.md`: A markdown file for tracking items that need to be fixed.
+*   `vite.config.ts`: Configuration file for Vite.
+*   `components.json`: a configuration file used by the shadcn/ui library. It defines how shadcn/ui should behave in your project.
+*   `tsconfig.app.json`: TypeScript configuration specific to the application code.
+*   `tsconfig.json`: Root TypeScript configuration file.
+*   `tsconfig.node.json`: TypeScript configuration for Node.js specific parts of the project (e.g., build scripts).
+*   `.gitignore`: Specifies intentionally untracked files that Git should ignore.
+*   `eslint.config.js`: Configuration file for ESLint.
+
+## `src` Directory - Application Source Code
+
+This is where the core logic and UI of our application resides.
+
+*   `assets/`: Static assets used within the application code.
+    *   *Purpose*: Store images, icons, or other media files that are imported and used by our components.
+*   `main.tsx`: The entry point of the React application.
+    *   *Purpose*: Initializes the React application and renders the root component.
+*   `hooks/`: Custom React hooks.
+    *   `requestWithAuth.ts`: Hook for making API requests that require authentication.
+    *   `requestNoAuth.ts`: Hook for making API requests that do not require authentication.
+    *   *Purpose*: Encapsulate reusable stateful logic and side effects.
+*   `components/`:
+    *   *Purpose*: Contains all React components.
+        *   `ui/`: General-purpose, reusable UI elements (e.g., buttons, inputs, modals - usually from shadcn/ui). These are often stateless or have minimal internal logic.
+        *   `pages/`: Components that represent entire pages or views of the application. These typically compose smaller components from `ui/` and feature-specific directories.
+        *   Feature-specific directories (e.g., `opportunities/`, `prospects/`, `dashboard/`): Components related to a particular page, feature or domain of the application.
+        *   `layout/`: Components that define the overall structure and layout of the application (e.g., header, footer, sidebar, main content area).
+        *   `auth/`: Components related to user authentication (e.g., login forms, registration forms, protected route HOCs).
+*   `lib/`: Utility functions and libraries.
+    *   `utils.ts`: General utility functions.
+    *   *Purpose*: Store helper functions, constants, or third-party library configurations that are not specific to any single component or feature.
+*   `types/`: TypeScript type definitions.
+    *   *Purpose*: Define data structures and interfaces used throughout the application. This helps with type safety and code clarity.
+*   `context/`: React Context API providers and consumers.
+    *   *Purpose*: Share global state or data across different parts of the component tree without prop drilling.
+*   `index.css`: Global styles for the application.
+    *   *Purpose*: Base styles, resets, or utility classes that apply to the entire application.
+*   `vite-env.d.ts`: TypeScript definitions for Vite environment variables.
+
+## General Guidelines for Development
+
+*   **Routing**: (Using React Router Dom)
+    *   Route definitions are placed in `app.tsx` file at the root of `src/`.
+    *   Page components (from `src/components/pages/`) are typically rendered by these routes.

@@ -1,0 +1,72 @@
+services:
+  app:
+    container_name: helpme-api
+    build:
+      context: ..
+      dockerfile: ./.devcontainer/Dockerfile
+    ports:
+      - "3006:3006"
+    volumes:
+      - ..:/app
+      - helpme_build_data:/app/build
+      - helpme_node_modules_data:/app/node_modules
+    env_file:
+      - ./dev.env
+    depends_on:
+      - mongodb
+    command: sleep infinity
+  
+  mongodb:
+    container_name: helpme-mongodb
+    image: mongo:5.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - help_me_mongodb_data:/data/db
+    restart: always
+    # NOTE: The official mongo image will prepend 'mongod' if you just pass arguments.
+    # This is fine: it means 'mongod --replSet rs0 --bind_ip_all'.
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+
+  # This container is NOT actually a 'replica node'; it's just a short-lived container
+  # that runs 'mongosh' once to call rs.initiate(). A more descriptive name might be 'init-replica'.
+  mongodb-replica:
+    container_name: helpme-mongodb-replica
+    image: mongo:5.0
+    depends_on:
+      - mongodb
+    command: >
+      bash -c "
+        # Give the main MongoDB time to start
+        sleep 5;
+
+        # Use the *service name* 'mongodb' (not 'mongo') in the connection string
+        mongosh mongodb://mongodb:27017 <<EOF
+          rs.initiate({
+            _id: 'rs0',
+            members: [
+              { _id: 0, host: "localhost:27017" }
+            ]
+          });
+
+          print('Replica set initiated. Current status:');
+          printjson(rs.status());
+        EOF
+      "
+    # Because this is an init container, no need for a volume or port mapping; it just runs once.
+    restart: "no"
+
+  nylas-webhook-server:
+    container_name: helpme-nylas-webhook-server
+    image: ngrok/ngrok:latest
+    ports:
+      - "3010:3010"
+      - "4040:4040"
+    command: http helpme-api:3006 --log=stdout
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+
+volumes:
+  help_me_mongodb_data:
+  helpme_node_modules_data:
+  helpme_build_data:

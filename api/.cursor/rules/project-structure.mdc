@@ -1,0 +1,208 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Our project is structured as follows:
+# Project Structure Guide
+
+## Overview
+
+This is a TypeScript/Node.js CRM application with AI integration using Express.js, MongoDB, and the Mastra AI framework. 
+The project follows a modular, layered architecture pattern with clear separation of concerns.
+We run development in a dev container, where the application is stored under app
+
+## Root Directory Structure
+
+```
+/
+├── package.json              # Project dependencies and scripts
+├── package-lock.json         # Locked dependency versions
+├── tsconfig.json             # TypeScript configuration
+├── .gitignore               # Git ignore patterns
+├── .DS_Store               # macOS system file (should be in .gitignore)
+├── .devcontainer/          # VS Code dev container configuration
+├── .vscode/                # VS Code workspace settings
+├── .cursor/                # Cursor IDE configuration
+├── .git/                   # Git repository data
+├── node_modules/           # npm dependencies (auto-generated)
+├── build/                  # Compiled TypeScript output
+├── uploads/                # File upload storage directory
+├── tasks/                  # PDR's to be completed
+└── src/                    # Main source code directory
+```
+
+## Source Code Structure (`src/`)
+
+### Core Application Files
+
+```
+src/
+├── index.ts                # Application entry point and server setup
+├── config/                 # Configuration management
+│   └── database.ts         # Database connection configuration
+```
+
+**Purpose**: Core application bootstrap and configuration
+**Guidelines**:
+- `index.ts`: Express server setup, middleware registration, route mounting
+- `config/`: Environment-specific configurations, database connections, external service configs
+
+### Data Layer
+
+```
+src/
+├── models/                 # Database models and schemas
+│   ├── User.ts             # User authentication model
+```
+
+**Purpose**: Database schema definitions and data models
+**Guidelines**:
+- One file per major entity
+- Use Mongoose schemas for MongoDB
+- Include validation, indexes, and relationships
+- Export both the interface and model
+- Only use methods when changes do not touch multiple collections.
+- If changes touch multiple collections, we should put the logic in a service or route to take advantage of mongo transactions
+
+### API Layer
+
+```
+src/
+├── routes/                # API route definitions
+│   ├── admin/             # Administrative routes
+│   ├── authRoutes.ts      # Authentication endpoints
+```
+
+**Purpose**: REST API endpoint definitions
+**Guidelines**:
+- One file per major resource/domain
+- Keep routes thin - delegate to controllers
+- Use Express Router
+- Follow RESTful conventions
+- Group related admin routes in `admin/` subdirectory
+
+### Business Logic Layer
+
+```
+src/
+├── controllers/            # Request handlers and business logic
+│   ├── authController.ts   # Authentication logic
+```
+
+**Purpose**: HTTP request handling and business logic coordination
+**Guidelines**:
+- One controller per route file
+- Handle request/response formatting
+- Coordinate between services and models
+- Input validation and error handling
+- Keep controllers focused on HTTP concerns
+
+### Service Layer
+
+```
+src/
+├── services/               # Business services and external integrations
+```
+
+**Purpose**: Reusable business logic and external service integrations
+**Guidelines**:
+- Pure business logic, no HTTP concerns
+- Reusable across controllers
+- External API integrations
+- Complex algorithms and processing
+- Group AI services in `AI/` subdirectory
+
+
+### Infrastructure Layer
+
+```
+src/
+├── middleware/            # Express middleware
+│   ├── auth.ts            # Authentication middleware
+│   └── rateLimiter.ts     # Rate limiting middleware
+├── types/                 # TypeScript type definitions
+└── utils/                 # Utility functions
+```
+
+**Purpose**: Cross-cutting concerns and utilities
+**Guidelines**:
+- `middleware/`: Express middleware for auth, logging, validation, etc.
+- `types/`: TypeScript interfaces, enums, and type definitions
+- `utils/`: Pure utility functions and helpers
+
+## File Naming Conventions
+
+### Controllers
+- **Pattern**: `{resource}Controller.ts`
+- **Example**: `userController.ts`, `opportunityController.ts`
+- **Purpose**: Handle HTTP requests for a specific resource
+
+### Routes
+- **Pattern**: `{resource}Routes.ts`
+- **Example**: `userRoutes.ts`, `opportunityRoutes.ts`
+- **Purpose**: Define API endpoints for a specific resource
+
+### Models
+- **Pattern**: `{Entity}.ts` (PascalCase)
+- **Example**: `User.ts`, `EmailActivity.ts`
+- **Purpose**: Database schema and model definition
+
+### Services
+- **Pattern**: `{purpose}Service.ts` or `{serviceName}.ts`
+- **Example**: `EmailSchedulerService.ts`, `NylasService.ts`
+- **Purpose**: Business logic and external integrations
+
+### Types
+- **Pattern**: `{purpose}.types.ts` or `index.ts`
+- **Example**: `user.types.ts`, `api.types.ts`
+- **Purpose**: TypeScript type definitions
+
+## Directory Guidelines
+
+### When to Create New Directories
+
+1. **Domain Separation**: Create new directories when you have a distinct business domain
+2. **Feature Modules**: Group related functionality (routes, controllers, services) by feature
+3. **External Integrations**: Separate services for each major external API
+
+### Where to Place Different File Types
+
+| File Type | Location | Example |
+|-----------|----------|---------|
+| Database Models | `src/models/` | `src/models/User.ts` |
+| API Routes | `src/routes/` | `src/routes/userRoutes.ts` |
+| Business Logic | `src/controllers/` | `src/controllers/userController.ts` |
+| External Services | `src/services/` | `src/services/EmailService.ts` |
+| Middleware | `src/middleware/` | `src/middleware/auth.ts` |
+| Type Definitions | `src/types/` | `src/types/user.types.ts` |
+| Utilities | `src/utils/` | `src/utils/helpers.ts` |
+| Configuration | `src/config/` | `src/config/database.ts` |
+| AI Components | `src/mastra/` | `src/mastra/agents/salesAgent.ts` |
+
+## Development Guidelines
+
+### Adding New Features
+
+1. **Model**: Create database model in `src/models/`
+2. **Routes**: Define API endpoints in `src/routes/`
+3. **Controller**: Implement request handlers in `src/controllers/`
+4. **Service**: Add business logic in `src/services/`
+5. **Types**: Define TypeScript interfaces in `src/types/`
+
+### External Integrations
+
+1. Create service in `src/services/`
+2. Add configuration in `src/config/`
+3. Create dedicated controller if needed
+4. Add routes for webhooks or callbacks
+
+## Best Practices
+
+1. **Separation of Concerns**: Keep routes thin, controllers focused, services reusable
+2. **Consistent Naming**: Follow established patterns for file and directory names
+3. **Type Safety**: Use TypeScript interfaces and types throughout
+4. **Error Handling**: Implement consistent error handling in controllers
+5. **Documentation**: Comment complex business logic and AI integrations
+6. **Testing**: Place test files in `src/tests` location, in the appropriate folder
+7. **Environment Configuration**: Use environment variables for all external configurations

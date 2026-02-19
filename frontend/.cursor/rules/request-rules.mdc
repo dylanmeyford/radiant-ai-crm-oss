@@ -1,0 +1,8 @@
+---
+alwaysApply: true
+---
+when making requests to our api, we ONLY use the built in hooks:
+[requestNoAuth.ts](mdc:src/hooks/requestNoAuth.ts) - for when no authentication is required (rare)
+[requestWithAuth.ts](mdc:src/hooks/requestWithAuth.ts) - most api calls
+
+We use TanStack Query to manage our api online/offline. All UI components should perform optimistic UI updates with a subtle indicator until they are confirmed.

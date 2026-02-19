@@ -1,0 +1,143 @@
+---
+description: For use when organising, editing or creating routes and controllers
+globs: 
+alwaysApply: false
+---
+1. Routes are organized in dedicated files under: src/routes/
+2. Route file names are camelCase. For example: activityRoutes.ts
+3. Each route file creates an Express Router instance, defines endpoints, and maps them to controller functions. For example:
+
+```typescript 
+import express from 'express';
+import { completeTask } from '../controllers/activityController';
+import { protect } from '../middleware/auth';
+
+const router = express.Router();
+
+// All routes are protected
+router.use(protect);
+
+router.patch('/tasks/:id/complete', completeTask);
+
+export default router;
+```
+
+4. Controller logic is separated into dedicated files under: src/controllers/
+5. Controller file names are camelCase. For example: activityController.ts
+6. Controller files export functions to be used by routes. For example:
+
+```typescript
+import { Request, Response } from 'express';
+import Activity from '../models/Activity';
+
+// Get all activities for the organization
+export const getActivities = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = req.user;
+    const { type, status, prospect } = req.query;
+
+    if (!user) {
+      res.status(401).json({ success: false, message: 'User not authenticated' });
+      return;
+    }
+
+    // Build filter object
+    const filter: any = { organization: user.organization };
+    
+    if (type) {
+      filter.type = type;
+    }
+    
+    if (status) {
+      filter.status = status;
+    }
+    
+    if (prospect) {
+      filter.prospect = prospect;
+    }
+
+    const activities = await Activity.find(filter)
+      .populate('prospect')
+      .populate('contacts')
+      .populate('createdBy', 'name email')
+      .sort({ date: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: activities
+    });
+  } catch (error) {
+    console.error('Get activities error:', error);
+    res.status(500).json({ success: false, message: 'Error fetching activities' });
+  }
+};
+```
+
+7. Always include error handling & logging in our controller functions
+8. All API responses should follow a consistent format:
+    - Success: { success: true, data: ... }
+    - Error: { success: false, message: ... }
+9. Use MongoDB transactions for operations that modify multiple collections or documents that need to be atomic
+10. Transaction patterns should follow this structure:
+
+```typescript
+import mongoose from 'mongoose';
+
+export const createActivityWithProspectUpdate = async (req: Request, res: Response): Promise<void> => {
+  const session = await mongoose.startSession();
+  
+  try {
+    await session.withTransaction(async () => {
+      const user = req.user;
+      const { prospectId, activityData } = req.body;
+
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Create the activity
+      const activity = new Activity({
+        ...activityData,
+        organization: user.organization,
+        createdBy: user._id
+      });
+      await activity.save({ session });
+
+      // Update the prospect's last activity date
+      await Prospect.findByIdAndUpdate(
+        prospectId,
+        { lastActivityDate: new Date() },
+        { session }
+      );
+
+      console.log(`Activity created and prospect updated for user: ${user._id}`);
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Activity created and prospect updated successfully'
+    });
+  } catch (error) {
+    console.error('Transaction error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Transaction failed' 
+    });
+  } finally {
+    await session.endSession();
+  }
+};
+```
+
+11. Always use session.withTransaction() for automatic retry logic and session management
+12. Pass the session to all database operations within the transaction: { session }
+13. Throw errors within transactions to trigger rollback - don't use res.status() inside the transaction block
+14. Always end the session in a finally block
+15. Use transactions for:
+    - Creating records in multiple collections
+    - Updating related documents that must stay consistent
+    - Operations where partial completion would leave data in an invalid state
+16. For simple single-document operations, transactions are not necessary
+
+17. All routers are imported and mounted in the main index.ts file with appropriate URL prefixes. 
+For Example: app.use('/api/auth', authRoutes);

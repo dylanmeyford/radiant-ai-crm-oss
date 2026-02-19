@@ -1,0 +1,120 @@
+---
+alwaysApply: true
+---
+When creating, editing or updating components, you must follow these rules:
+
+## Location
+
+1. new components should be placed in the src/components/ directory
+2. General-purpose, reusable UI elements (e.g., buttons, inputs, modals - often from shadcn/ui) belong in src/components/ui/. These should ideally be stateless or have minimal internal logic.
+3. Components representing entire pages or views should be placed in src/components/pages/. These components will typically compose smaller UI elements and feature-specific components.
+4. Components related to a specific feature or domain (e.g., opportunities/, prospects/, dashboard/) should be placed in their respective feature-specific directories within src/components/. If a directory for the feature doesn't exist, create one.
+5. Layout components (e.g., header, footer, sidebar, main content area) belong in src/components/layout/.
+6. Authentication-related components (e.g., login forms, registration forms) belong in src/components/auth/.
+
+## Naming Conventions
+
+1. Component file names should use PascalCase (e.g., MyComponent.tsx).
+2. Directory names for feature-specific components should be lowercase (e.g., opportunities/).
+
+## Structure & Content
+
+1. Components should be written in TypeScript (.tsx extension). Use functional components with TypeScript interfaces.
+2. Strive to keep components focused on a single responsibility.
+3. Utilize existing UI components from src/components/ui/ & shadcn/ui whenever possible to maintain consistency.
+4. For stateful logic and side effects that can be reused across components, create custom hooks in the src/hooks/ directory.
+
+## Styling
+
+1. We always use shadcn components.
+2. When designing components, we assume a 'mobile-first' approach, and ensure we have mobile stylings too.
+3. We always include skeleton loaders in case a user has slow internet.
+4. For actions that are likely to succeed (e.g., adding a new item to a list, marking a task as complete), implement optimistic updates using TanStack Query patterns. See [optimistic-patterns.mdc](mdc:.cursor/rules/optimistic-patterns.mdc) for required implementation patterns. Use [useOperationsTemplate.ts](mdc:src/hooks/useOperationsTemplate.ts) as a starting point for new hooks.
+5. Leverage Tailwind CSS for styling. Configuration is in tailwind.config.js.
+6. Global styles are defined in src/index.css. Avoid adding component-specific styles here; prefer Tailwind utility classes directly in the component or, if necessary, co-located styles.
+7. Follow Shaden UI component guidelines and best practices.
+8. Ensure UI is responsive and accessible.
+
+### Design System Consistency
+
+Follow these specific design patterns to maintain visual consistency across the application:
+
+#### Layout & Structure
+- Use `p-4` for main page padding (not `p-6`)
+- Apply `overflow-hidden` to main containers and `overflow-y-auto` to scrollable content areas
+- Use proper flex layouts: `flex flex-col` for vertical stacking, `flex-1` for expanding sections
+
+#### Typography Hierarchy
+- **Headers**: `text-sm font-medium text-gray-900` for card/section titles
+- **Secondary text**: `text-xs text-gray-500` for descriptions and metadata
+- **Body text**: `text-sm text-gray-900` for main content
+- **Error text**: `text-xs text-red-600` for error messages
+
+#### Card Design Pattern
+Use this consistent card structure instead of shadcn Card components for content sections:
+```tsx
+<div className="bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+  <div className="p-4 border-b border-gray-200">
+    <div className="flex items-center gap-2">
+      <Icon className="h-4 w-4 text-gray-600" />
+      <h3 className="text-sm font-medium text-gray-900">Section Title</h3>
+    </div>
+    <p className="text-xs text-gray-500 mt-1">Section description</p>
+  </div>
+  <div className="p-4">
+    {/* Content */}
+  </div>
+</div>
+```
+
+#### Interactive Elements
+- **Buttons**: Use `px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200`
+- **Active state**: `bg-gray-900 text-white`
+- **Inactive state**: `text-gray-600 hover:text-gray-900 hover:bg-gray-50`
+- **Primary actions**: `bg-gray-900 text-white hover:bg-gray-800`
+
+#### Spacing & Layout
+- Use `space-y-4` for vertical spacing between sections (not `space-y-6`)
+- Use `mb-4` for section separators
+- Use `gap-2` for small element spacing, `gap-4` for larger spacing
+
+#### Loading States
+- Match skeleton components to actual content structure
+- Use `rounded-md` for button skeletons, `rounded` for icon skeletons
+- Maintain consistent spacing and sizing with loaded content
+
+#### Color Palette
+- **Primary text**: `text-gray-900`
+- **Secondary text**: `text-gray-600`
+- **Muted text**: `text-gray-500`
+- **Borders**: `border-gray-200` default, `border-gray-300` on hover
+- **Backgrounds**: `bg-white` for cards, `bg-gray-50` for hover states
+- **Accents**: `bg-gray-900` for primary actions
+
+## Types 
+1. Define necessary TypeScript types and interfaces in the src/types/ directory. Import them into your components as needed.
+
+## State Management
+1. For local component state, use React's built-in useState and useReducer hooks.
+2. For global state or sharing data across different parts of the component tree, use the React Context API. Context providers and consumers should be defined in src/context/.
+
+## API Requests
+1. All API requests must be made through the provided custom hooks:
+- src/hooks/requestWithAuth.ts: Use this for API calls that require user authentication. This is the most common scenario.
+- src/hooks/requestNoAuth.ts: Use this for API calls that do not require authentication (e.g., fetching public configuration data). Use sparingly.
+
+These hooks should encapsulate the actual fetch call, error handling, and any standard headers or request transformations.
+
+## Location of API calls
+1. API calls should primarily be initiated from:
+- Page Components (src/components/pages/): When a page loads and needs to fetch its primary data.
+- Feature-Specific Components (src/components/<feature>/): When a specific feature or section within a page needs to load or update its data.
+- Custom Hooks (src/hooks/): If the API call logic is complex or reusable across multiple components, encapsulate it within a new custom hook that then utilizes requestWithAuth.ts or requestNoAuth.ts.
+
+Avoid making direct API calls from general-purpose UI components (src/components/ui/). These components should receive data via props.
+
+## Overall
+Optimize React component rendering using memoization techniques (e.g., React.memo).
+Avoid unnecessary re-renders.
+Lazy load components and images when possible.
+Use efficient data structures and algorithms.

@@ -1,0 +1,63 @@
+---
+alwaysApply: true
+---
+# Testing Guide
+
+## Overview
+
+When creating tests for our application, we only create end-to-end tests that use our actual application logic and hit actual external services using test/sandbox credentials. 
+
+This means that we use the actual routes and logic of the application to perform some action and check the outcome.
+
+**What we DON'T mock:**
+- Stripe (use test mode keys)
+- Nylas (use sandbox application)
+- MongoDB (use test database)
+- AI Agents 
+- Queue Workers (use real queue processing)
+
+## Environment
+
+Tests use `test.env` with sandbox/test credentials for all external services. This file should contain:
+- `STRIPE_SECRET_KEY` - Stripe test mode key (`sk_test_*`)
+- `NYLAS_API_KEY` - Nylas sandbox application key
+- `MONGODB_URI` - Points to `helpme_test` database
+- `OPENAI_API_KEY` - Real OpenAI key (usage tracked via metadata)
+
+
+## Files
+All test files live inside of src/tests:
+
+src/tests/
+├── setup.ts # Global DB setup, env loading
+├── helpers/
+│ ├── RouteFactory.ts # This is where we create objects for our tests using the real routes of our application. This is always our preference over inserting directly into the databse.
+│ ├── Factory.ts # This is where we create objects for testing by directly inserting into database. This is used in select situations and AI tools must always ask the user for permission before doing so.
+│ ├── auth.ts # Token generation for use in protected routes
+│ └── testData.ts # Test constants (Stripe test cards, etc.)
+└── e2e/
+├── auth.test.ts
+├── billing.test.ts # Uses real Stripe test mode
+└── [feature].test.ts
+
+## Process
+
+1. Create required database objects
+2. Send request to appropriate route + functions
+3. Measure result is intended
+
+## Checklist Before Creating a Test
+[ ] Is test.env configured with required test/sandbox keys?
+[ ] Does Factory.ts have methods for required models?
+[ ] Are Stripe test payment methods used (not real cards)?
+[ ] Is the app exported from src/app.ts?
+[ ] Are edge cases covered (401, 403, 404, 400)?
+[ ] Is multi-tenant isolation tested?
+
+## Cleanup
+
+With real Stripe/Nylas calls, test data accumulates in those dashboards.
+In these instances, we should cleanup (e.g. afterEach) to delete created resources via their APIs.
+
+## Examples
+
