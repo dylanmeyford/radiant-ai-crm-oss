@@ -1,0 +1,81 @@
+{
+  "notifications": [
+    {
+      "id": "2026-01-10-multiple-pipelines",
+      "title": "Multiple Pipelines",
+      "description": "You can now create and manage multiple pipelines to organize your opportunities in different ways. Use the + button next to Pipeline in the sidebar to create new pipelines, then switch between them using the expanded submenu. When accepting mined deals, you can now choose which pipeline to add them to.",
+      "date": "2026-01-10",
+      "type": "feature"
+    },
+    {
+      "id": "2026-01-10-deal-mining",
+      "title": "Deal Mining",
+      "description": "Introducing Deal Mining - Radiant now automatically identifies potential opportunities from your email activity and suggests them on your Today page. Review suggested deals with full context, then accept to create a new prospect and opportunity, or dismiss if it's not a fit.",
+      "date": "2026-01-10",
+      "type": "feature"
+    },
+    {
+      "id": "2025-11-14-Prompting-Updates",
+      "title": "General AI Updates",
+      "description": "We've improved the AI on a number of fronts to make the actions more accurate and helpful.",
+      "date": "2025-12-14",
+      "type": "feature"
+  },
+    {
+      "id": "2025-11-12-BYO-Notetaker",
+      "title": "BYO Notetaker",
+      "description": "We've implemented the option to use your own Notetaker for meetings. You can then either a) paste in the transcription on the meeting activity page, or b) use a webhook to automatically pass the meeting to Radiant for processing.",
+      "date": "2025-11-12",
+      "type": "feature"
+  },
+    {
+      "id": "2025-11-07-New-Email-View",
+      "title": "Brand New Email View",
+      "description": "We've completely redesigned the email view to be cleaner and more useful. Apart from UI, some new features include: clicking the 'in reply to' link to view the email being responded to, clicking on activities in the AI reasoning to view the full activity, and a timeline below the current action to more fully understand the context of the deal.",
+      "date": "2025-11-07",
+      "type": "feature"
+  },
+    {
+      "id": "2025-11-05-Inactive-Accounts",
+      "title": "Inactive Account Notifications",
+      "description": "We've added notifications for when your accounts become inactive, as well as some tools that keep your accounts authenticated if you haven't logged in for a while.",
+      "date": "2025-11-05",
+      "type": "feature"
+  },
+    {
+      "id": "2025-11-03-action-viewer-close",
+      "title": "Improved Today Page Loading",
+      "description": "We've added improved cache handling for the Today page to improve the user experience.",
+      "date": "2025-11-03",
+      "type": "feature"
+  },
+    {
+      "id": "2025-10-30-dual-task",
+      "title": "Sneaky Task Creation",
+      "description": "We've added a fix where the AI would create Tasks for actions it was supposed to perform in the future, instead of performing the appropriate action at the right time.",
+      "date": "2025-10-30",
+      "type": "bugfix"
+  },
+    {
+      "id": "2025-10-29-feature-guardrail",
+      "title": "AI Processing Guardrail",
+      "description": "We've added a guardrail to prevent AI processing on opportunities that don't have contacts added. Processing will resume once contacts have been added to the deal.",
+      "date": "2025-10-30",
+      "type": "bugfix"
+  },
+    {
+        "id": "2025-10-29-feature-billing",
+        "title": "Billing System is Live",
+        "description": "Billing system is now live and ready to use on the settings page. Here you can sign up, manage your subscription, your seats, update payment methods, view invoices and more.",
+        "date": "2025-10-29",
+        "type": "feature"
+    },
+    {
+      "id": "2025-10-29-HTML-Formatting",
+      "title": "Improvements to email HTML formatting.",
+      "description": "Fixed an issue where email thread history was not being properly hidden by Gmail and some other email clients.",
+      "date": "2025-10-29",
+      "type": "bugfix"
+    }
+  ]
+}
