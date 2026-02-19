@@ -1,14 +1,16 @@
-<p align="center">
-  <img src="assets/radiant_logo.svg" alt="Radiant" height="48" />
-</p>
+<div align="center">
+  <img src="assets/radiant_logo.svg" alt="Radiant" height="80" />
+  <h1>Radiant AI CRM</h1>
+  <p><strong>Your AI-powered sales rep that never sleeps.</strong></p>
+  <p>
+    <a href="https://meetradiant.com"><img src="https://img.shields.io/badge/meetradiant.com-5B4CF6?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0xIDE3aC0ydi02aDJ2NnptMC04aC0yVjdoMnYyeiIvPjwvc3ZnPg==&logoColor=white" alt="Website" /></a>
+    <a href="https://github.com/dylanmeyford/radiant-ai-crm-oss/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-AGPL%20v3-blue?style=for-the-badge" alt="License" /></a>
+    <a href="https://x.com/dylanmeyford"><img src="https://img.shields.io/badge/@dylanmeyford-000000?style=for-the-badge&logo=x&logoColor=white" alt="X / Twitter" /></a>
+  </p>
+  <p><em>Open-source AI CRM that works autonomously — so you can focus on selling.</em></p>
+</div>
 
-
-
-# Radiant AI CRM (OSS)
-
-**Your AI-powered sales rep that never sleeps.** [meetradiant.com](https://meetradiant.com)
-
-Built by: [https://x.com/dylanmeyford](https://x.com/dylanmeyford)
+---
 
 <p align="center">
   <img src="assets/app view.png" alt="Radiant App" width="100%" />
