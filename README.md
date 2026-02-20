@@ -54,6 +54,7 @@ No more CRM admin. No more dropped follow-ups. No more missed opportunities. Jus
 - Native communication workflows through Nylas email and calendar integrations
 - Type-safe, full-stack monorepo setup with shared conventions and docs
 - Built for practical local development with a dev container-first backend workflow
+- Built in eval framework
 
 ## Monorepo Layout
 
@@ -68,6 +69,25 @@ Preferred local workflow is using the dev container for backend development.
 1. Open the `api/` folder in VS Code or Cursor.
 2. Reopen in container using `api/.devcontainer/devcontainer.json`.
 3. Use the container terminal to install dependencies and run services.
+
+## Bring Your Own OpenAI Key (BYOK)
+
+Radiant uses OpenAI for all AI features (currently - I plan to allow users to choose their models) — pipeline analysis, action drafting, meeting summarisation, and more. When self-hosting, you supply your own OpenAI API key.
+
+**Steps:**
+
+1. Create an API key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
+2. Add it to your API environment file:
+   - Dev container: `api/.devcontainer/dev.env`
+   - Local setup: `api/.env`
+
+```
+OPENAI_API_KEY=sk-...your-key-here...
+```
+
+> **Cost**: All API usage is billed directly to your OpenAI account. You can monitor spend and set usage limits in the [OpenAI dashboard](https://platform.openai.com/usage).
+
+---
 
 ## Quick Start
 
