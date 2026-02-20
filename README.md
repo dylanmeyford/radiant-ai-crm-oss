@@ -7,7 +7,7 @@
     <a href="https://github.com/dylanmeyford/radiant-ai-crm-oss/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-AGPL%20v3-blue?style=for-the-badge" alt="License" /></a>
     <a href="https://x.com/dylanmeyford"><img src="https://img.shields.io/badge/@dylanmeyford-000000?style=for-the-badge&logo=x&logoColor=white" alt="X / Twitter" /></a>
   </p>
-  <p><em>Open-source AI CRM that works autonomously — so you can focus on selling.</em></p>
+  <p><em>Open-source AI CRM that works autonomously — so you can focus on running your business.</em></p>
 </div>
 
 ---
@@ -18,6 +18,8 @@
 
 
 Radiant is an open-source AI CRM that works autonomously in the background — analysing your pipeline, drafting your next move, and keeping every deal moving forward. Wake up in the morning, approve actions, get back to prospecting.
+
+*note:* This was a closed project that I've opensourced, so it's a little rough around the edges in terms of opensource documentation. I'm working on improving that. Please DM me on X with questions.
 
 ---
 
